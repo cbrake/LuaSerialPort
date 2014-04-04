@@ -29,8 +29,7 @@ native code -- especially cross compiling for embedded platforms.
 Status
 ------
 
-* write has been tested
-* working on read 
+* non-blocking read/write implemented
 
 License:MIT
 -----------

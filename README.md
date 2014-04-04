@@ -19,7 +19,7 @@ Example
 ```lua
 sp.open("/dev/ttyUSB0");
 sp.setBaud(sp.B115200);
-local count = sp.write("123);
+local count = sp.write("123");
 print("Wrote " .. count .. " bytes");
 ```
 

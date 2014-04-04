@@ -8,15 +8,11 @@ Introduction
 This project implements a Serial Port module for Lua.  It currently only supports Linux, and requires LuaJIT
 FFI.
 
-Usage
------
-
-local sp = require "serial-port"
-
 Example
 -------
 
 ```lua
+local sp = require "serial-port"
 sp.open("/dev/ttyUSB0");
 sp.setBaud(sp.B115200);
 local count = sp.write("123");

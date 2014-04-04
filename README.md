@@ -5,7 +5,7 @@ Lua Serial Port
 Introduction
 ------------
 
-This project contains Serial Port module.  It currently only supports Linux, and requires LuaJIT
+This project implements a Serial Port module for Lua.  It currently only supports Linux, and requires LuaJIT
 FFI.
 
 Usage

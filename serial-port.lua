@@ -160,8 +160,25 @@ function serialPort.write(data)
 		return -1;
 	end
 
-	return C.write(serialPort.fd, data, string.len(data));
+	return C.write(serialPort.fd, data, #data);
 end
+
+function serialPort.read()
+	local ret = ""
+	local bufsize = 256;
+	local buf = ffi.new("uint8_t[?]", bufsize);
+	local cnt;
+	while true do
+		cnt = C.read(serialPort.fd, buf, bufsize);
+		if cnt <= 0 then
+			break;
+		end
+		ret = ret .. ffi.string(buf, cnt)
+	end
+
+	return ret;
+end
+	
 
 -- add C constants and functions to serialPort object
 setmetatable(serialPort, { __index = C })

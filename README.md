@@ -24,7 +24,7 @@ Motivation
 
 While the same could be accomplished using various projects like luaposix or librs232lua, many times
 you simply need something simple and don't want to be bothered with building extensions that have
-native code -- especially cross compiling on embedded platforms.
+native code -- especially cross compiling for embedded platforms.
 
 Status
 ------

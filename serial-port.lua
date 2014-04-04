@@ -92,7 +92,7 @@ static const int  B3500000 = 0010016;
 static const int  B4000000 = 0010017;
 static const int __MAX_BAUD = B4000000;
 
-typedef struct termios_ {
+typedef struct termios {
 	unsigned int c_iflag;
 	unsigned int c_oflag;
 	unsigned int c_cflag;
@@ -101,14 +101,35 @@ typedef struct termios_ {
 	unsigned char c_cc[32];
 	unsigned int c_ispeed;
 	unsigned int c_ospeed;
-} termios;
+}termios_t;
+
+static const int	TCOOFF =		0;
+static const int	TCOON =		1;
+static const int	TCIOFF =		2;
+static const int	TCION =		3;
+
+static const int	TCIFLUSH =	0;
+static const int	TCOFLUSH =	1;
+static const int	TCIOFLUSH =	2;
+
+static const int	TCSANOW =		0;
+static const int	TCSADRAIN =	1;
+static const int	TCSAFLUSH =	2;
+
+static const int O_RDONLY =	00000000;
+static const int O_WRONLY =	00000001;
+static const int O_RDWR =		00000002;
 
 int printf(const char *fmt, ...);
 int open(const char *pathname, int flags);
 int tcsetattr(int fd, int optional_actions, const struct termios *termios_p);
 int fcntl(int fd, int cmd, ...);
+int write(int fd, const void *buf, int count);
+int read(int fd, void *buf, int count);
 
 ]]
+
+local C=ffi.C;
 
 local serialPort = { }
 
@@ -117,12 +138,12 @@ function serialPort.setBaud(baud)
 		return -1;
 	end
 
-	local t = ffi.new("termios");
-	t.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
+	local t = ffi.new("termios_t");
+	t.c_cflag = bit.bor(baud, C.CS8, C.CLOCAL, C.CREAD);
 	
-	
-
-
+	if (C.tcsetattr(serialPort.fd, C.TCSANOW, t) ~= 0) then
+		print("Error setting termios");
+	end
 end
 
 function serialPort.open(path)
@@ -134,7 +155,16 @@ function serialPort.open(path)
 	end
 end
 
+function serialPort.write(data)
+	if (serialPort.fd < 0) then
+		return -1;
+	end
+
+	return C.write(serialPort.fd, data, string.len(data));
+end
+
+-- add C constants and functions to serialPort object
+setmetatable(serialPort, { __index = C })
 
 return serialPort
-
 

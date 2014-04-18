@@ -123,9 +123,25 @@ static const int O_RDWR =		00000002;
 int printf(const char *fmt, ...);
 int open(const char *pathname, int flags);
 int tcsetattr(int fd, int optional_actions, const struct termios *termios_p);
+int tcdrain(int fd);
 int fcntl(int fd, int cmd, ...);
 int write(int fd, const void *buf, int count);
 int read(int fd, void *buf, int count);
+int ioctl(int fildes, int request, ...);
+
+static const int TIOCSRS485 = 0x542F;
+
+static const int SER_RS485_ENABLED = (1 << 0);
+static const int SER_RS485_RTS_ON_SEND = (1 << 1);
+static const int SER_RS485_RTS_AFTER_SEND = (1 << 2);
+static const int SER_RS485_RX_DURING_TX = (1 << 4);
+
+typedef struct serial_rs485 {
+	uint32_t flags;
+	uint32_t delay_rts_before_send;
+        uint32_t delay_rts_after_send;
+	uint32_t padding[5];
+} serial_rs485_t;
 
 ]]
 
@@ -140,9 +156,12 @@ function serialPort.setBaud(baud)
 
 	local t = ffi.new("termios_t");
 	t.c_cflag = bit.bor(baud, C.CS8, C.CLOCAL, C.CREAD);
-	
+
 	if (C.tcsetattr(serialPort.fd, C.TCSANOW, t) ~= 0) then
 		print("Error setting termios");
+		return false;
+	else
+		return true;
 	end
 end
 
@@ -152,6 +171,9 @@ function serialPort.open(path)
 	serialPort.fd = ffi.C.open(path, 2);
 	if (serialPort.fd < 0) then
 		print("Error opening " .. path);
+		return false;
+	else
+		return true;
 	end
 end
 
@@ -178,7 +200,22 @@ function serialPort.read()
 
 	return ret;
 end
-	
+
+function serialPort.drain()
+	C.tcdrain(serialPort.fd);
+end
+
+function serialPort.enableRs485()
+	local rs485 = ffi.new("serial_rs485_t");
+	rs485.flags = bit.bor(C.SER_RS485_ENABLED, C.SER_RS485_RTS_ON_SEND, C.SER_RS485_RTS_AFTER_SEND);
+	rs485.delay_rts_after_send = 0;
+	rs485.delay_rts_before_send = 0;
+	if (C.ioctl(serialPort.fd, C.TIOCSRS485, rs485) < 0) then
+		return false;
+	else
+		return true;
+	end
+end
 
 -- add C constants and functions to serialPort object
 setmetatable(serialPort, { __index = C })

@@ -2,8 +2,8 @@
 
 local sp = require "serial-port"
 
-sp.open("/dev/ttyUSB18");
-sp.setBaud(sp.B115200);
+assert(sp.open("/dev/ttyUSB0"), "Open failed");
+assert(sp.setBaud(sp.B115200), "set baud failed");
 
 while true do
   local r = sp.read();
